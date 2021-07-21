@@ -1,8 +1,11 @@
 import axios from 'axios';
 import TelegramBot from 'node-telegram-bot-api';
-import {bot} from '.';
+import {config} from './config';
 import {DiscordWebhookResponse} from './types';
-import FormData from 'form-data';
+
+const {PubSub} = require('@google-cloud/pubsub');
+
+export const pubSubClient = new PubSub();
 
 export const postToDiscord = (
   response: DiscordWebhookResponse | undefined,
@@ -20,4 +23,16 @@ export const constructDiscordMessageFromTelegramMessage = (
   };
 
   return webhookResponse;
+};
+
+export const publishTelegramMessageToPubSub = (msg: TelegramBot.Message) => {
+  // Publishes the message as a string, e.g. "Hello, world!" or JSON.stringify(someObject)
+  const dataBuffer = Buffer.from(JSON.stringify(msg));
+  const message = {
+    data: dataBuffer,
+    orderingKey: 'msg.date',
+  };
+  return pubSubClient
+    .topic(config.google.interaction_topic, {enableMessageOrdering: true})
+    .publishMessage(message);
 };
