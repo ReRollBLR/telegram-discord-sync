@@ -4,7 +4,7 @@ export type DiscordEmbed = {
   description: string;
   color?: number;
   timestamp?: string;
-  author: {
+  author?: {
     name: string;
     icon_url: string;
   };

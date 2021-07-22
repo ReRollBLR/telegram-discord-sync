@@ -17,20 +17,42 @@ export const postToDiscord = (
 export const constructDiscordMessageFromTelegramMessage = (
   msg: TelegramBot.Message
 ): DiscordWebhookResponse => {
-  let content;
+  let content = '';
+  let text = '';
+  if (msg.caption) {
+    text = msg.caption as string;
+  }
+  if (msg.text) {
+    text = msg.text as string;
+  }
   // This is a reply message
   if (msg.reply_to_message) {
     const quotedMessage = `**${msg.reply_to_message.from?.username}**: ${msg.reply_to_message.text}`;
     if (quotedMessage) {
-      content = `${quotedMessage.replace(/^/gm, '> ')}\n${msg.text}`;
+      content = `${quotedMessage.replace(/^/gm, '> ')}\n${text}`;
     }
   } else {
-    content = msg.text as string;
+    content = text;
   }
 
+  let image;
+  if (msg.photo) {
+    // get largest image for discord (since discord does it's own processing anyway)
+    const photo = msg.photo?.sort((_x, _y) => {
+      return (_y.file_size as number) - (_x.file_size as number);
+    })[0];
+    image = {
+      url: `${config.base_url}/fileFromFileId/${photo?.file_id}.jpeg`,
+    };
+  }
   const webhookResponse: DiscordWebhookResponse = {
     username: getWebhookUsernameFromUsername(msg.from?.username as string),
-    content: content,
+    embeds: [
+      {
+        description: content as string,
+        image: image,
+      },
+    ],
   };
 
   return webhookResponse;
