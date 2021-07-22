@@ -57,8 +57,23 @@ app.post('/telegram-subscription', async (req, res) => {
         new Promise((resolve, reject) => {
           const form = new FormData();
           form.append('username', `${msg.from?.username} (Meeple Market)`);
-          if (msg.caption) {
-            form.append('content', msg.caption);
+
+          let content;
+          // This is a reply message
+          if (msg.reply_to_message) {
+            const quotedMessage = `**${msg.reply_to_message.from?.username}**: ${msg.reply_to_message.text}`;
+            let caption = '';
+            if (msg.caption) {
+              caption = `\n${msg.caption}`;
+            }
+            if (quotedMessage) {
+              content = `${quotedMessage.replace(/^/gm, '> ')}${caption}`;
+            }
+          } else {
+            content = msg.caption as string;
+          }
+          if (content) {
+            form.append('content', content);
           }
           // get largest image for discord (since discord does it's own processing anyway)
           const photo = msg.photo?.sort((_x, _y) => {
