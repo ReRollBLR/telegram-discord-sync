@@ -4,6 +4,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import {config} from './config';
 import {
   constructDiscordMessageFromTelegramMessage,
+  getWebhookUsernameFromUsername,
   postToDiscord,
   publishTelegramMessageToPubSub,
 } from './lib';
@@ -56,7 +57,10 @@ app.post('/telegram-subscription', async (req, res) => {
       discordPromises.push(
         new Promise((resolve, reject) => {
           const form = new FormData();
-          form.append('username', `${msg.from?.username} (Meeple Market)`);
+          form.append(
+            'username',
+            getWebhookUsernameFromUsername(msg.from?.username as string)
+          );
 
           let content;
           // This is a reply message
