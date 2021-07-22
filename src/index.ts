@@ -1,10 +1,8 @@
 import express from 'express';
-import FormData from 'form-data';
 import TelegramBot from 'node-telegram-bot-api';
 import {config} from './config';
 import {
   constructDiscordMessageFromTelegramMessage,
-  getWebhookUsernameFromUsername,
   postToDiscord,
   publishTelegramMessageToPubSub,
 } from './lib';
@@ -49,55 +47,26 @@ app.post('/telegram-subscription', async (req, res) => {
 
   const discordPromises: any[] = [];
   discordWebhookUrls.forEach(discordWebhookUrl => {
-    if (msg.text) {
+    if (msg.text || msg.photo) {
       const discordMessaage = constructDiscordMessageFromTelegramMessage(msg);
       discordPromises.push(postToDiscord(discordMessaage, discordWebhookUrl));
-    }
-    if (msg.photo) {
-      discordPromises.push(
-        new Promise((resolve, reject) => {
-          const form = new FormData();
-          form.append(
-            'username',
-            getWebhookUsernameFromUsername(msg.from?.username as string)
-          );
-
-          let content;
-          // This is a reply message
-          if (msg.reply_to_message) {
-            const quotedMessage = `**${msg.reply_to_message.from?.username}**: ${msg.reply_to_message.text}`;
-            let caption = '';
-            if (msg.caption) {
-              caption = `\n${msg.caption}`;
-            }
-            if (quotedMessage) {
-              content = `${quotedMessage.replace(/^/gm, '> ')}${caption}`;
-            }
-          } else {
-            content = msg.caption as string;
-          }
-          if (content) {
-            form.append('content', content);
-          }
-          // get largest image for discord (since discord does it's own processing anyway)
-          const photo = msg.photo?.sort((_x, _y) => {
-            return (_y.file_size as number) - (_x.file_size as number);
-          })[0];
-          form.append('file', bot.getFileStream(photo?.file_id as string), {
-            filename: 'bar.jpg',
-            contentType: 'image/jpeg',
-            knownLength: photo?.file_size,
-          });
-          form.submit(discordWebhookUrl, (error, response) => {
-            if (error) reject(error);
-            else resolve(response);
-          });
-        })
-      );
     }
   });
   await Promise.all(discordPromises);
   res.send();
+});
+
+app.get('/fileFromFileId/:fileId.jpeg', (req, res) => {
+  if (!req.params.fileId) {
+    res.status(400).send('You need to provide a file ID');
+  }
+  res.contentType('image/jpeg');
+  const buffers: any[] = [];
+  const stream = bot.getFileStream(req.params.fileId as string);
+  stream.on('data', data => buffers.push(data));
+  stream.on('end', () => {
+    res.send(Buffer.concat(buffers));
+  });
 });
 
 app.get('/', (req, res) => {
