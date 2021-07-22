@@ -29,7 +29,7 @@ export const constructDiscordMessageFromTelegramMessage = (
   }
 
   const webhookResponse: DiscordWebhookResponse = {
-    username: msg.from?.username as string,
+    username: getWebhookUsernameFromUsername(msg.from?.username as string),
     content: content,
   };
 
@@ -46,4 +46,8 @@ export const publishTelegramMessageToPubSub = (msg: TelegramBot.Message) => {
   return pubSubClient
     .topic(config.google.interaction_topic, {enableMessageOrdering: true})
     .publishMessage(message);
+};
+
+export const getWebhookUsernameFromUsername = (username: string) => {
+  return `${username} (via Meeple Market)`;
 };
