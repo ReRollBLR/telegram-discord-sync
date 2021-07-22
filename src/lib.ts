@@ -17,9 +17,20 @@ export const postToDiscord = (
 export const constructDiscordMessageFromTelegramMessage = (
   msg: TelegramBot.Message
 ): DiscordWebhookResponse => {
+  let content;
+  // This is a reply message
+  if (msg.reply_to_message) {
+    const quotedMessage = `**${msg.reply_to_message.from?.username}**: ${msg.reply_to_message.text}`;
+    if (quotedMessage) {
+      content = `${quotedMessage.replace(/^/gm, '> ')}\n${msg.text}`;
+    }
+  } else {
+    content = msg.text as string;
+  }
+
   const webhookResponse: DiscordWebhookResponse = {
     username: msg.from?.username as string,
-    content: msg.text as string,
+    content: content,
   };
 
   return webhookResponse;
