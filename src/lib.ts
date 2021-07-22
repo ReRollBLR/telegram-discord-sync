@@ -46,7 +46,7 @@ export const constructDiscordMessageFromTelegramMessage = (
     };
   }
   const webhookResponse: DiscordWebhookResponse = {
-    username: getWebhookUsernameFromUsername(msg.from?.username as string),
+    username: getWebhookUsernameFromTelegramUser(msg.from as TelegramBot.User),
     embeds: [
       {
         description: content as string,
@@ -70,6 +70,13 @@ export const publishTelegramMessageToPubSub = (msg: TelegramBot.Message) => {
     .publishMessage(message);
 };
 
-export const getWebhookUsernameFromUsername = (username: string) => {
-  return `${username} (via Meeple Market)`;
+export const getWebhookUsernameFromTelegramUser = (user: TelegramBot.User) => {
+  let _name = user.first_name;
+  if (user.last_name) {
+    _name = `${_name} ${user.last_name}`;
+  }
+  if (user.username) {
+    _name = user.username;
+  }
+  return `${_name} (via Meeple Market)`;
 };

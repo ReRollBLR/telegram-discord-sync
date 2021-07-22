@@ -31,9 +31,16 @@ app.post(
       res.status(200).send('ok');
       return;
     }
+
+    if (!config.mapping[msg.chat.id.toString()]) {
+      console.log(`Don't recognize chat id :${msg.chat.id.toString()}`);
+      res.status(200).send('ok');
+      return;
+    }
+
     await publishTelegramMessageToPubSub(msg);
 
-    res.status(200).send('ok!');
+    res.status(200).send('ok');
   }
 );
 
@@ -42,8 +49,7 @@ app.post('/telegram-subscription', async (req, res) => {
   const decodedString = Buffer.from(base64, 'base64').toString();
   const msg = JSON.parse(decodedString) as TelegramBot.Message;
 
-  const discordWebhookUrls =
-    config.mapping[msg.chat.id.toString() as '-1001440666371'];
+  const discordWebhookUrls = config.mapping[msg.chat.id.toString()];
 
   const discordPromises: any[] = [];
   discordWebhookUrls.forEach(discordWebhookUrl => {
