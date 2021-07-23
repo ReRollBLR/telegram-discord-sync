@@ -1,6 +1,10 @@
 import axios from 'axios';
 import TelegramBot from 'node-telegram-bot-api';
 import {config} from './config';
+import {
+  getEscapedTextFromMessage,
+  getUsernameFromTelegramUser,
+} from './formatter';
 import {DiscordWebhookResponse} from './types';
 
 const {PubSub} = require('@google-cloud/pubsub');
@@ -18,19 +22,14 @@ export const constructDiscordMessageFromTelegramMessage = (
   msg: TelegramBot.Message
 ): DiscordWebhookResponse => {
   let content = '';
-  let text = '';
-  if (msg.caption) {
-    text = msg.caption as string;
-  }
-  if (msg.text) {
-    text = msg.text as string;
-  }
+  const text = getEscapedTextFromMessage(msg);
 
   // This is a reply message
   if (msg.reply_to_message) {
+    const _replyText = getEscapedTextFromMessage(msg.reply_to_message);
     const quotedMessage = `**${getUsernameFromTelegramUser(
       msg.reply_to_message.from as TelegramBot.User
-    )}**: ${msg.reply_to_message.text}`;
+    )}**: ${_replyText}`;
     if (quotedMessage) {
       content = `${quotedMessage.replace(/^/gm, '> ')}\n${text}`;
     }
@@ -73,15 +72,4 @@ export const publishTelegramMessageToPubSub = (msg: TelegramBot.Message) => {
   return pubSubClient
     .topic(config.google.interaction_topic, {enableMessageOrdering: true})
     .publishMessage(message);
-};
-
-export const getUsernameFromTelegramUser = (user: TelegramBot.User) => {
-  let _name = user.first_name;
-  if (user.last_name) {
-    _name = `${_name} ${user.last_name}`;
-  }
-  if (user.username) {
-    _name = user.username;
-  }
-  return _name;
 };
