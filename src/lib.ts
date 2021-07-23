@@ -25,9 +25,12 @@ export const constructDiscordMessageFromTelegramMessage = (
   if (msg.text) {
     text = msg.text as string;
   }
+
   // This is a reply message
   if (msg.reply_to_message) {
-    const quotedMessage = `**${msg.reply_to_message.from?.username}**: ${msg.reply_to_message.text}`;
+    const quotedMessage = `**${getUsernameFromTelegramUser(
+      msg.reply_to_message.from as TelegramBot.User
+    )}**: ${msg.reply_to_message.text}`;
     if (quotedMessage) {
       content = `${quotedMessage.replace(/^/gm, '> ')}\n${text}`;
     }
@@ -46,7 +49,9 @@ export const constructDiscordMessageFromTelegramMessage = (
     };
   }
   const webhookResponse: DiscordWebhookResponse = {
-    username: getWebhookUsernameFromTelegramUser(msg.from as TelegramBot.User),
+    username: `${getUsernameFromTelegramUser(
+      msg.from as TelegramBot.User
+    )} (via Meeple Market)`,
     embeds: [
       {
         description: content as string,
@@ -70,7 +75,7 @@ export const publishTelegramMessageToPubSub = (msg: TelegramBot.Message) => {
     .publishMessage(message);
 };
 
-export const getWebhookUsernameFromTelegramUser = (user: TelegramBot.User) => {
+export const getUsernameFromTelegramUser = (user: TelegramBot.User) => {
   let _name = user.first_name;
   if (user.last_name) {
     _name = `${_name} ${user.last_name}`;
@@ -78,5 +83,5 @@ export const getWebhookUsernameFromTelegramUser = (user: TelegramBot.User) => {
   if (user.username) {
     _name = user.username;
   }
-  return `${_name} (via Meeple Market)`;
+  return _name;
 };
