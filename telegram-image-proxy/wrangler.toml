@@ -1,0 +1,8 @@
+name = "telegram-image-proxy"
+type = "javascript"
+
+account_id = "43491473cc56d7e1ce9f8fdb6ad0c071"
+workers_dev = false
+zone_id = "739e9564e120920c0e6409c5748c2540"
+routes = ["https://api.reroll.in/telegram-image-proxy"]
+
