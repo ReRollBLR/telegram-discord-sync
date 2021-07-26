@@ -10,6 +10,7 @@ export const config: {
     [telegram_chat_id: string]: string[];
   };
   base_url: string;
+  image_proxy_base_url: string;
 } = JSON.parse(
   Buffer.from(process.env.CONFIG || '', 'base64').toString('utf-8') || '{}'
 );

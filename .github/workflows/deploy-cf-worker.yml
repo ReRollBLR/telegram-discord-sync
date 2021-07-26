@@ -16,6 +16,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: 'telegram-image-proxy'
+          environment: 'production'
           secrets: |
             BOT_TOKEN
         env:
