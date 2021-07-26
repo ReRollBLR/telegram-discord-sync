@@ -44,7 +44,7 @@ export const constructDiscordMessageFromTelegramMessage = (
       return (_y.file_size as number) - (_x.file_size as number);
     })[0];
     image = {
-      url: `https://api.reroll.in/telegram-image-proxy/${photo?.file_id}.jpeg`,
+      url: `${config.image_proxy_base_url}/${photo?.file_id}.jpeg`,
     };
   }
   const webhookResponse: DiscordWebhookResponse = {
