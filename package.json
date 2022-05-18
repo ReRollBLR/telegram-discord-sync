@@ -29,7 +29,7 @@
     "@google-cloud/functions-framework": "^1.9.0",
     "@google-cloud/logging-winston": "^4.1.0",
     "@google-cloud/pubsub": "^2.16.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "concurrently": "^6.2.0",
     "express": "^4.17.1",
     "form-data": "^4.0.0",
